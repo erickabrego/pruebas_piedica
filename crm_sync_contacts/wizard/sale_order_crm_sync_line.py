@@ -30,5 +30,6 @@ class SaleOrderCRMSyncProductLine(models.TransientModel):
     product_qty = fields.Float(string="Cantidad")
     product_uom = fields.Char(string="Unidad de medida")
     order_id = fields.Many2one(comodel_name="sale.order.crm.sync.line", string="Lineas de orden")
+    id_order_line = fields.Many2one(comodel_name="sale.order.line", string="Linea de venta")
 
 

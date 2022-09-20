@@ -46,6 +46,9 @@ class CRMConfirmSend(models.TransientModel):
         if "Error" in message:
             self.sale_order.message_post(body=f"Error al crear pedido en CRM: {message}")
             return notification
+        elif response.status_code != 200:
+            self.sale_order.message_post(body=f"Error al crear pedido en CRM debido a un error en la petición {response.reason}")
+            return notification
         else:
             message_list = message.split(",")
             id_pedido_crm = "".join([str(word) for word in message_list[1] if word.isdigit()])

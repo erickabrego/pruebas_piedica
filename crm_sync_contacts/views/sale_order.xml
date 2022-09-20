@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//header" position="inside">
-                    <button name="open_crm_orders" string="Pedidos CRM" class="btn btn-secondary" type="object"/>
+                    <button name="open_crm_orders" string="Pedidos CRM" class="btn btn-secondary" type="object" attrs={'invisible':[('state','=','draft')]}/>
                 </xpath>
             </field>
         </record>

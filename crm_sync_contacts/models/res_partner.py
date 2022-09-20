@@ -3,10 +3,19 @@
 from odoo import models, fields, api,_
 import logging
 _logger = logging.getLogger(__name__)
+import requests
 
 
 class ResPartner(models.Model):
     _inherit = "res.partner"
+
+    @api.model
+    def create(self, vals_list):
+        res = super(ResPartner, self).create(vals_list)
+        if res.x_studio_es_paciente:
+            for rec in res:
+                rec.create_contact_to_crm()
+        return res
 
     def update_crm_id(self, args):
         self.write({"id_crm": args.get("crm_id")})
@@ -77,3 +86,57 @@ class ResPartner(models.Model):
                 'res_id': patient_id.id,
                 'views': [(False, 'form')],
             }
+
+    def create_contact_to_crm(self):
+        endpoint = f"https://crmpiedica.com/api/searchpatient.php"
+        data = {
+            "nombre": str(self.name).upper(),
+            "sexo": str(dict(self._fields["x_studio_gnero"].selection).get(self.x_studio_gnero)).upper(),
+            "fecha_nacimiento": str(self.x_studio_cumpleaos),
+            "email": self.email,
+            "telefono": self.phone,
+            "celular": self.mobile,
+            "estatura": self.x_studio_altura_cm,
+            "peso": self.x_studio_peso_kgs,
+            "talla": float(self.x_studio_talla),
+            "id_sucursal": self.x_studio_sucursal.id,
+            "prescripcion": "",
+            "link_prescripcion": "www.google.com",
+            "patologia": self.other_complaints,
+            "tipo_referencia": self.x_studio_cmo_nos_contacta,
+            "referencia": "www.google.com",
+            "id_odoo": self.id,
+            "dolores": [
+                {
+                    "espalda": 1 if "Dolor de espalda" in self.main_complaints.mapped("name") else 0,
+                    "rodilla": 1 if "Dolor de rodillas" in self.main_complaints.mapped("name") else 0,
+                    "tobillo": 1 if "Dolor de tobillos" in self.main_complaints.mapped("name") else 0,
+                    "cadera": 1 if "Dolor de cadera" in self.main_complaints.mapped("name") else 0,
+                    "pies": 1 if "Dolor de pies" in self.main_complaints.mapped("name") else 0
+                }
+            ],
+            "direccion": [
+                {
+                    "calle": self.street,
+                    "colonia": self.l10n_mx_edi_colony,
+                    "municipio": self.city_id.name,
+                    "ciudad": self.city_id.name,
+                    "pais": self.country_id.name,
+                    "estado": self.state_id.name,
+                    "cp": self.zip,
+                    'alias': 'DEFAULT'
+                }
+            ]
+        }
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(endpoint, headers=headers ,json=data)
+        message = response.content.decode("utf-8")
+        if response.status_code != 200:
+            message = f"La creación del paciente en CRM no fue posible debido al siguiente error: {response.reason}, favor de sincronizar el contacto."
+            self.message_post(message)
+        elif "Error" in response.content.decode("utf-8"):
+            message = f"La creación no fue posible, debido al siguiente error: {message}"
+            self.message_post(message)
+        else:
+            message = f"La creación del contacto fue exitosa."
+            self.message_post(message)

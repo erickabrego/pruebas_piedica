@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 import requests
 
 class ResPartnerCRMSync(models.TransientModel):
@@ -35,7 +36,14 @@ class ResPartnerCRMSync(models.TransientModel):
                     "template_size": patient.get("id_tallacalzado"),
                 }
                 self.write({'patient_ids': [(0,0,data)]})
-                return "success"
+                return {
+                    'type': 'ir.actions.act_window',
+                    'target': 'new',
+                    'res_model': 'res.partner.crm.sync',
+                    'name': ("Sincronización Odoo-CRM"),
+                    'res_id': self.id,
+                    'views': [(False, 'form')],
+                }
         else:
             return {
                 'type': 'ir.actions.client',
@@ -49,5 +57,9 @@ class ResPartnerCRMSync(models.TransientModel):
     #Relaciona el id CRM en Odoo dependiendo el paciente seleccionado
     def sync_contact_odoo(self):
         to_sync = self.patient_ids.filtered(lambda line: line.sync_id)
+        patient = self.env["res.partner"].search([("id_crm","=",to_sync[0].crm_id)],limit=1)
         if to_sync:
+            if patient:
+                raise ValidationError(f"El paciente {patient.name} ya está sincronizado con el mismo id de CRM.")
             self.partner_id.id_crm = to_sync[0].crm_id
+            return {'type': 'ir.actions.act_window_close'}

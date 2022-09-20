@@ -76,8 +76,8 @@ class ResPartner(models.Model):
             }
             patient_id = self.env["res.partner.crm.sync"].sudo().create(patient_vals)
             result = patient_id.search_crm_contact()
-            if result != "success":
-                return result
+            # if result != "success":
+            #     return result
             return {
                 'type': 'ir.actions.act_window',
                 'target': 'new',

@@ -20,6 +20,19 @@ class SaleOrder(models.Model):
                     rec.x_branch_order_id.sudo().write({'estatus_crm': values.get("estatus_crm")})
         return res
 
+    def create_estatus_crm(self):
+        res = super(SaleOrder, self).create_estatus_crm()
+        for rec in self:
+            rec.x_branch_order_id.write({
+                'crm_status_history': [(0, 0, {
+                    'sale_order': self.id,
+                    'status': self.estatus_crm.id,
+                    'date': datetime.datetime.now()
+                })]
+            })
+        return res
+
+
     def create_branch_purchase_order(self, rule_id, mrp_lines):
         if self.partner_id.x_studio_es_paciente and mrp_lines and rule_id:
             purchase_data = {

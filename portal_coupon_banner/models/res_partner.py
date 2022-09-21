@@ -9,6 +9,8 @@ class ResPartner(models.Model):
 
     def get_available_coupon(self):
         domain = ['&', '&', '|', ('state', '=', 'new'), ('state', '=', 'sent'), ('partner_id', '=', self.id), ('p_type', '=', 'renovacion')]
+        coupon_program = self.env['coupon.program'].search([('name', '=', 'Renovación')])
+        program_products = coupon_program.discount_specific_product_ids.mapped('id') if coupon_program else []
         coupons = self.env['coupon.coupon'].search(domain)
         today = datetime.date.today()
         coupons_list = []
@@ -24,6 +26,13 @@ class ResPartner(models.Model):
         coupons_list.sort(key=lambda coupon: coupon.expiration_date)
 
         for coupon in coupons_list:
+            order_products = coupon.order_id.order_line.mapped('id') if coupon.order_id else []
+
+            # Comprueba que alguno de los productos de la orden pertenezca al
+            # programa de cupones
+            if not (set(program_products) & set(order_products)):
+                continue
+
             if coupon.expiration_date >= today:
                 return coupon
 

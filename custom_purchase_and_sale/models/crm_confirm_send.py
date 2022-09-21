@@ -25,8 +25,9 @@ class CRMConfirmSend(models.TransientModel):
                 if rec.partner_shipping_id.id != rec.company_id.partner_id.id:
                     rec.picking_ids.action_cancel()
                     for line in rec.order_line:
-                        purchase_line = purchase_id.order_line.filtered(lambda p_line: p_line.product_id.id == line.product_id.id and line.product_uom_qty == p_line.product_qty)
-                        purchase_line["sale_line_id"] = line.id
+                        purchase_line = purchase_id.order_line.filtered(lambda p_line: p_line.product_id.id == line.product_id.id)
+                        for purchase in purchase_line:
+                            purchase["sale_line_id"] = line.id
 
 
 

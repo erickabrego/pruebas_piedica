@@ -83,7 +83,7 @@ class ResPartner(models.Model):
                 'target': 'new',
                 'res_model': 'res.partner.crm.sync',
                 'name': _("Sincronización Odoo-CRM"),
-                'res_id': patient_id.id,
+                'res_id': patient_id.id,                
                 'views': [(False, 'form')],
             }
 
@@ -133,10 +133,13 @@ class ResPartner(models.Model):
         message = response.content.decode("utf-8")
         if response.status_code != 200:
             message = f"La creación del paciente en CRM no fue posible debido al siguiente error: {response.reason}, favor de sincronizar el contacto."
-            self.message_post(message)
+            self.message_post(body=message)
         elif "Error" in response.content.decode("utf-8"):
             message = f"La creación no fue posible, debido al siguiente error: {message}"
-            self.message_post(message)
+            self.message_post(body=message)
         else:
             message = f"La creación del contacto fue exitosa."
-            self.message_post(message)
+            self.message_post(body=message)
+            index_crm = message.index(":")
+            id_crm = message[index+1:]
+            self.id_crm = id_crm

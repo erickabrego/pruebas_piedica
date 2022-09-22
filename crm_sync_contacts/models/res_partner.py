@@ -89,21 +89,21 @@ class ResPartner(models.Model):
 
     def create_contact_to_crm(self):
         endpoint = f"https://crmpiedica.com/api/searchpatient.php"
-        data = {
+        data = [{
             "nombre": str(self.name).upper(),
-            "sexo": str(dict(self._fields["x_studio_gnero"].selection).get(self.x_studio_gnero)).upper(),
-            "fecha_nacimiento": str(self.x_studio_cumpleaos),
-            "email": self.email,
-            "telefono": self.phone,
-            "celular": self.mobile,
-            "estatura": self.x_studio_altura_cm,
-            "peso": self.x_studio_peso_kgs,
+            "sexo": str(dict(self._fields["x_studio_gnero"].selection).get(self.x_studio_gnero)[0]).upper() if self.x_studio_gnero else "",
+            "fecha_nacimiento": str(self.x_studio_cumpleaos) if self.x_studio_cumpleaos else "",
+            "email": self.email if self.email else "",
+            "telefono": self.phone if self.phone else "",
+            "celular": self.mobile if self.mobile else "",
+            "estatura": self.x_studio_altura_cm if self.x_studio_altura_cm else "",
+            "peso": self.x_studio_peso_kgs if self.x_studio_peso_kgs else "",
             "talla": float(self.x_studio_talla),
-            "id_sucursal": self.x_studio_sucursal.id,
+            "id_sucursal": self.x_studio_sucursal.id if self.x_studio_sucursal else 0,
             "prescripcion": "",
             "link_prescripcion": "www.google.com",
-            "patologia": self.other_complaints,
-            "tipo_referencia": self.x_studio_cmo_nos_contacta,
+            "patologia": self.other_complaints if self.other_complaints else "",
+            "tipo_referencia": self.x_studio_cmo_nos_contacta if self.x_studio_cmo_nos_contacta else "",
             "referencia": "www.google.com",
             "id_odoo": self.id,
             "dolores": [
@@ -117,20 +117,24 @@ class ResPartner(models.Model):
             ],
             "direccion": [
                 {
-                    "calle": self.street,
-                    "colonia": self.l10n_mx_edi_colony,
-                    "municipio": self.city_id.name,
-                    "ciudad": self.city_id.name,
-                    "pais": self.country_id.name,
-                    "estado": self.state_id.name,
-                    "cp": self.zip,
+                    "calle": self.street if self.street else "",
+                    "colonia": self.l10n_mx_edi_colony if self.l10n_mx_edi_colony else "",
+                    "municipio": self.city_id.name if self.city_id else "",
+                    "ciudad": self.city_id.name if self.city_id else "",
+                    "pais": self.country_id.name if self.country else "",
+                    "estado": self.state_id.name if self.state_id else "",
+                    "cp": self.zip if self.zip else "",
                     'alias': 'DEFAULT'
                 }
             ]
-        }
+        }]
         headers = {'Content-Type': 'application/json'}
         response = requests.post(endpoint, headers=headers ,json=data)
         message = response.content.decode("utf-8")
+        _logger.info("Datos enviados para crear contacto en CRM:")
+        _logger.info(data)
+        _logger.info("Respuesta:")
+        _logger.info(message)
         if response.status_code != 200:
             message = f"La creación del paciente en CRM no fue posible debido al siguiente error: {response.reason}, favor de sincronizar el contacto."
             self.message_post(body=message)

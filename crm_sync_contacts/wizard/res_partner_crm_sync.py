@@ -3,6 +3,8 @@
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 import requests
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class ResPartnerCRMSync(models.TransientModel):
@@ -36,13 +38,14 @@ class ResPartnerCRMSync(models.TransientModel):
             endpoint = f"https://crmpiedica.com/api/searchpatient.php?name={self.name}"
         response = requests.get(endpoint)
         response_json = response.json()
+        _logger.info(response_json)
         if response.ok and response_json != "NO existe registro ...":
             for patient in response_json:
                 data = {
                     "name": patient.get("nombre_completo"),
                     "crm_id": patient.get("id_paciente"),
                     "gender": patient.get("sexo"),
-                    "birth_date": patient.get("fecha_nacimiento"),
+                    "birth_date": patient.get("fecha_nacimiento") if patient.get("fecha_nacimiento") != "0000-00-00" else False,
                     "email": patient.get("email"),
                     "phone": patient.get("telefono"),
                     "mobile": patient.get("celular"),
@@ -51,26 +54,26 @@ class ResPartnerCRMSync(models.TransientModel):
                     "template_size": patient.get("id_tallacalzado"),
                 }
                 self.write({'patient_ids': [(0, 0, data)]})
-                if first:
-                    return {
-                        'type': 'ir.actions.act_window',
-                        'target': 'new',
-                        'res_model': 'res.partner.crm.sync',
-                        'name': ("Sincronización Odoo-CRM"),
-                        'res_id': self.id,
-                        'views': [(False, 'form')],
-                    }
-                else:
-                    self.birth_date = False
-                    self.email = False
-                    return {
-                        'type': 'ir.actions.act_window',
-                        'target': 'new',
-                        'res_model': 'res.partner.crm.sync',
-                        'name': ("Sincronización Odoo-CRM"),
-                        'res_id': self.id,
-                        'views': [(False, 'form')],
-                    }
+            if first:
+                return {
+                    'type': 'ir.actions.act_window',
+                    'target': 'new',
+                    'res_model': 'res.partner.crm.sync',
+                    'name': ("Sincronización Odoo-CRM"),
+                    'res_id': self.id,
+                    'views': [(False, 'form')],
+                }
+            else:
+                self.birth_date = False
+                self.email = False
+                return {
+                    'type': 'ir.actions.act_window',
+                    'target': 'new',
+                    'res_model': 'res.partner.crm.sync',
+                    'name': ("Sincronización Odoo-CRM"),
+                    'res_id': self.id,
+                    'views': [(False, 'form')],
+                }
         else:
             return {
                 'type': 'ir.actions.client',

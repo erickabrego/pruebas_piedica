@@ -26,7 +26,7 @@ class ResPartner(models.Model):
         coupons_list.sort(key=lambda coupon: coupon.expiration_date)
 
         for coupon in coupons_list:
-            order_products = coupon.order_id.order_line.mapped('id') if coupon.order_id else []
+            order_products = coupon.order_id.order_line.mapped('product_id.id') if coupon.order_id else []
 
             # Comprueba que alguno de los productos de la orden pertenezca al
             # programa de cupones

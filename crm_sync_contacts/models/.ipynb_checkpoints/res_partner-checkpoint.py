@@ -121,7 +121,7 @@ class ResPartner(models.Model):
                     "colonia": self.l10n_mx_edi_colony if self.l10n_mx_edi_colony else "",
                     "municipio": self.city_id.name if self.city_id else "",
                     "ciudad": self.city_id.name if self.city_id else "",
-                    "pais": self.country_id.name if self.country else "",
+                    "pais": self.country_id.name if self.country_id else "",
                     "estado": self.state_id.name if self.state_id else "",
                     "cp": self.zip if self.zip else "",
                     'alias': 'DEFAULT'
@@ -136,14 +136,14 @@ class ResPartner(models.Model):
         _logger.info("Respuesta:")
         _logger.info(message)
         if response.status_code != 200:
-            message = f"La creación del paciente en CRM no fue posible debido al siguiente error: {response.reason}, favor de sincronizar el contacto."
-            self.message_post(body=message)
+            message_post = f"La creación del paciente en CRM no fue posible debido al siguiente error: {response.reason}, favor de sincronizar el contacto."
+            self.message_post(body=message_post)
         elif "Error" in response.content.decode("utf-8"):
-            message = f"La creación no fue posible, debido al siguiente error: {message}"
-            self.message_post(body=message)
+            message_post = f"La creación no fue posible, debido al siguiente error: {message}"
+            self.message_post(body=message_post)
         else:
-            message = f"La creación del contacto fue exitosa."
-            self.message_post(body=message)
+            message_post = f"La creación del contacto fue exitosa."
+            self.message_post(body=message_post)
             index_crm = message.index(":")
-            id_crm = message[index+1:]
+            id_crm = message[index_crm+1:-1]            
             self.id_crm = id_crm

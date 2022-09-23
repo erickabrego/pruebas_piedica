@@ -8,4 +8,3 @@ class ProdShapeList(models.Model):
 
     name = fields.Char('Nombre')
     product_ids = fields.Many2many('product.template')
-    

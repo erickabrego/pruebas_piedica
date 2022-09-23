@@ -237,6 +237,17 @@ class CRMConfirmSend(models.TransientModel):
         if missing_data:
             raise UserError('Faltan los siguientes datos del envío: %s' % ', '.join(missing_data))
 
+        # Comprueba si el producto es custom
+        for line in self.sale_order.order_line:
+            if line.product_id.is_custom:
+                if not line.top_cover_id:
+                    raise UserError('Falta agregar el Top Cover para el producto custom %s' % line.product_id.name)
+
+                if not line.top_cover_id:
+                    raise UserError('Falta agregar el Main Layer para el producto custom %s' % line.product_id.name)
+
+                if not line.top_cover_id:
+                    raise UserError('Falta agregar el Mid Layer para el producto custom %s' % line.product_id.name)
 
         # Convierte la estructura a como se maneja en CRM (Objetos dentro de arreglos)
         order_data['datos_paciente'] = [order_data['datos_paciente']]

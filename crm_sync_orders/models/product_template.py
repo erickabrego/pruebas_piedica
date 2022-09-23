@@ -10,7 +10,7 @@ class ProductTemplate(models.Model):
     prod_design_type = fields.Many2many('prod.design.type', string='Design Type')
     prod34 = fields.Boolean(string='3/4')
     prod_material_subtype_id = fields.Many2one('prod.material.subtype', string='Prod Material SubType')
-
+    is_custom = fields.Boolean(string='¿Es custom?')
 
     # Materiales
     matSupplierName = fields.Char(string='Supplier Name')

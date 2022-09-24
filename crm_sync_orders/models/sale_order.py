@@ -52,8 +52,8 @@ class SaleOrder(models.Model):
 
     def create_crm_order(self, data):
         order_line = data.pop('order_line')
-        sale_order = self.with_context(lang='es_MX').create(data)
-        order_line_status = sale_order.create_crm_order_line(order_line)
+        sale_order = self.with_context(lang='es_MX',company_id=data.get("company_id")).create(data)
+        order_line_status = sale_order.create_crm_order_line(order_line, data.get("company_id"))
 
         if order_line_status['status'] == 'error':
             return order_line_status
@@ -101,7 +101,7 @@ class SaleOrder(models.Model):
 
 
 
-    def create_crm_order_line(self, products):
+    def create_crm_order_line(self, products,company):
         self.ensure_one()
         sale_order_line_obj = self.env['sale.order.line']
         product_product_obj = self.env['product.product']
@@ -118,7 +118,7 @@ class SaleOrder(models.Model):
                 'insole_size': product_data['insole_size']
             }
 
-            sale_order_line_obj.create(line_data)
+            sale_order_line_obj.with_company(company).create(line_data)
 
         return {
             'status': 'success'

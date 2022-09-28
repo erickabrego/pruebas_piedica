@@ -8,6 +8,7 @@ class BranchFactory(models.Model):
     factory_id = fields.Many2one(comodel_name="res.company", string="Fabrica")
     department_id = fields.Many2one(comodel_name="hr.department", string="Departamento")
     name = fields.Char(string="Nombre completo", compute="_get_rule_name")
+    delivery_address = fields.Many2one(comodel_name="res.partner", string="Dirección de sucursal")
 
     @api.depends("branch_id","factory_id")
     def _get_rule_name(self):

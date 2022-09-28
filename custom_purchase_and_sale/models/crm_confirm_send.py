@@ -22,7 +22,7 @@ class CRMConfirmSend(models.TransientModel):
                     {'department_id': rule_id.department_id.id, 'partner_ref': rec.name, 'user_id': rec.user_id.id})
                 purchase_id.button_confirm()
                 sale = rec.create_factory_sale_order(rule_id, purchase_id, mrp_lines)
-                if rec.partner_shipping_id.id != rec.company_id.partner_id.id:
+                if rec.partner_shipping_id.id != rule_id.delivery_address.id:
                     rec.picking_ids.action_cancel()
                     for line in rec.order_line:
                         purchase_line = purchase_id.order_line.filtered(lambda p_line: p_line.product_id.id == line.product_id.id)
@@ -38,6 +38,10 @@ class CRMConfirmSend(models.TransientModel):
     #Se modifica la función para poder seguir el flujo de crm dentro de odoo por medio de sucursal y fabrica
     def _validate_order_data(self, data):
         if self.x_is_branch_order:
+            # rule_id = self.env["branch.factory"].sudo().search(
+            #     [("branch_id.id", "=", self.x_is_branch_order.company_id.id)], limit=1)
+            # if self.sale_order.x_branch_order_id.partner_shipping_id.id == rule_id.delvery_address:
+
             gender = self.sale_order.x_branch_order_id.partner_id.x_studio_gnero
             data["datos_paciente"] = {
                 'nombre': str(self.sale_order.x_branch_order_id.partner_id.name).upper(),

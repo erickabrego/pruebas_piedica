@@ -76,6 +76,9 @@ class SaleOrder(models.Model):
                 "top_cover_id": order_line.top_cover_id.id,
                 "design_type": order_line.design_type,
                 "analytic_tag_ids": order_line.analytic_tag_ids.ids,
+                "main_layer_id": order_line.main_layer_id.id,
+                "mid_layer_id": order_line.mid_layer_id.id
+
             }
             sale_order.order_line = [(0,0,sale_line)]
 

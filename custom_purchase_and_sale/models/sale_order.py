@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
@@ -56,7 +55,7 @@ class SaleOrder(models.Model):
             "partner_id": self.company_id.partner_id.id,
             "partner_shipping_id": self.partner_shipping_id.id,
             "branch_id": self.company_id.partner_id.id,
-            "x_studio_selection_field_waqzv": "Otros",
+            "x_studio_selection_field_waqzv": self.x_studio_selection_field_waqzv,
             "company_id": rule_id.factory_id.id,
             "team_id": False,
             "observations": self.observations,
@@ -78,7 +77,6 @@ class SaleOrder(models.Model):
                 "analytic_tag_ids": order_line.analytic_tag_ids.ids,
                 "main_layer_id": order_line.main_layer_id.id,
                 "mid_layer_id": order_line.mid_layer_id.id
-
             }
             sale_order.order_line = [(0,0,sale_line)]
 
@@ -87,5 +85,4 @@ class SaleOrder(models.Model):
         if notification['params']['type'] == 'success':
             self.folio_pedido = sale_order.folio_pedido
             self.estatus_crm = sale_order.estatus_crm
-            self.crm_status_history = sale_order.crm_status_history
         return notification

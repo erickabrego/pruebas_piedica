@@ -9,6 +9,9 @@
                <xpath expr="//field[@name='client_order_ref']" position="after">
                    <field name="x_branch_order_id"/>
                </xpath>
+               <xpath expr="//field[@name='mid_layer_id']" position="after">
+                   <field name="x_shapelist_domian_ids"/>
+               </xpath>
            </field>
        </record>
     </data>

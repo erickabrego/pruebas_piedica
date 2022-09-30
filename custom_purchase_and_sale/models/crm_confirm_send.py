@@ -28,9 +28,6 @@ class CRMConfirmSend(models.TransientModel):
                         purchase_line = purchase_id.order_line.filtered(lambda p_line: p_line.product_id.id == line.product_id.id)
                         for purchase in purchase_line:
                             purchase["sale_line_id"] = line.id
-
-
-
         if self.x_is_branch_order:
             res = super(CRMConfirmSend, self).send_to_crm()
             return res
@@ -61,5 +58,3 @@ class CRMConfirmSend(models.TransientModel):
             }
         res = super(CRMConfirmSend, self)._validate_order_data(data)
         return res
-
-

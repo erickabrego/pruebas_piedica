@@ -35,5 +35,6 @@
         'data/prod_prod_use_list_data.xml',
         'data/prod_production_type_data.xml',
         'data/prod_shape_list_data.xml',
+        'data/ir_config_parameter.xml'
     ]
 }

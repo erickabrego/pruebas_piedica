@@ -21,7 +21,8 @@ class CRMConfirmSend(models.TransientModel):
 
     def _send_data(self):
         url = 'https://crmpiedica.com/api/api.php'
-        headers = {'Content-Type': 'application/json'}
+        token = self.env['ir.config_parameter'].sudo().get_param("crm.sync.token")
+        headers = {'Content-Type': 'application/json', 'Authorization': f'token {token}'}
         data = self._generate_order_data()
         response = requests.post(url, headers=headers, json=data)
 

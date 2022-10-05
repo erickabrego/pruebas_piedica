@@ -40,6 +40,8 @@ class CRMConfirmSend(models.TransientModel):
             # if self.sale_order.x_branch_order_id.partner_shipping_id.id == rule_id.delvery_address:
 
             gender = self.sale_order.x_branch_order_id.partner_id.x_studio_gnero
+            data["id_paciente_odoo"] = self.sale_order.x_branch_order_id.partner_id.id
+            data["id_paciente_crm"] = self.sale_order.x_branch_order_id.partner_id.id_crm
             data["datos_paciente"] = {
                 'nombre': str(self.sale_order.x_branch_order_id.partner_id.name).upper(),
                 'a_paterno': '',

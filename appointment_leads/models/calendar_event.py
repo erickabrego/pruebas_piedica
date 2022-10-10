@@ -58,30 +58,19 @@ class CalendarEvent(models.Model):
     def get_opportunity_partner(self):
         for rec in self:
             if not rec.opportunity_id:
-                partners_opportunity = rec.partner_ids.sudo().filtered(lambda partner: partner.x_studio_enviar_a and partner.opportunity_ids.filtered(lambda opportunity: opportunity.stage_id.name in ["Agenda cita", "Agenda cita virtual"]))
-                partners_without = rec.partner_ids.sudo().filtered(lambda partner: partner.x_studio_enviar_a and partner.id != rec.env.user.partner_id.id and partner.opportunity_ids.sudo().filtered(lambda opportunity: opportunity.stage_id.name not in ["Agenda cita", "Agenda cita virtual"]))
-                if partners_opportunity:
-                    for partner in partners_opportunity:
-                        for opportunity in partner.opportunity_ids.sudo().filtered(lambda opportunity: opportunity.stage_id.name in ["Agenda cita", "Agenda cita virtual"]):
-                            rec["opportunity_id"] = opportunity.id
-                elif partners_without:
-                    for partner_without in partners_without:
-                        lead_type = partner_without.x_studio_enviar_a
-                        lead = {
-                            "name": f"{partner_without.name} oportunidad",
-                            "partner_id": partner_without.id,
-                            "email_from": partner_without.email_formatted,
-                            "phone": partner_without.phone,
-                            "user_id": partner_without.env.user.id,
-                            "expected_revenue": 0,
-                            "probability": 0.0,
-                            "company_id": rec.env.company.id
-                        }
-                        if lead_type == "Agenda Cita Presencial":
-                            stage = rec.env['crm.stage'].sudo().search([('name', '=', "Agenda cita")], limit=1)
-                            lead["stage_id"] = stage.id
-                        elif lead_type == "Agenda Cita Virtual":
-                            stage = rec.env['crm.stage'].sudo().search([('name', '=', "Agenda cita virtual")], limit=1)
-                            lead["stage_id"] = stage.id
-                        opportunity = rec.env["crm.lead"].sudo().create(lead)
-                        rec["opportunity_id"] = opportunity.id
+                partner_id = rec.partner_ids.sudo().filtered(lambda partner: partner.x_studio_es_paciente)
+                stage_id = self.env["crm.stage"].sudo().search([("name", "=", "Agenda cita")], limit=1)
+                if partner_id:
+                    opportunity_ids = self.env["crm.lead"].sudo().search([("partner_id.id", "=", partner_id.id), (
+                    "stage_id.name", "in", ["Contactado", "Cancela cita"])])
+                    archived_opportunity = self.env["crm.lead"].sudo().search(
+                        [("partner_id.id", "=", partner_id.id), ("active", "=", False)])
+                    if opportunity_ids and stage_id:
+                        for opportunity_id in opportunity_ids:
+                            opportunity_id.stage_id = stage_id.id
+                            rec["opportunity_id"] = opportunity_id.id
+                    if archived_opportunity and stage_id:
+                        for archived_oppo in archived_opportunity:
+                            archived_oppo.stage_id = stage_id.id
+                            archived_oppo.active = True
+                            rec["opportunity_id"] = archived_opportunity.id

@@ -128,7 +128,8 @@ class ResPartner(models.Model):
                 }
             ]
         }]
-        headers = {'Content-Type': 'application/json'}
+        token = self.env['ir.config_parameter'].sudo().get_param("crm.sync.token")
+        headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'}
         response = requests.post(endpoint, headers=headers ,json=data)
         message = response.content.decode("utf-8")
         _logger.info("Datos enviados para crear contacto en CRM:")

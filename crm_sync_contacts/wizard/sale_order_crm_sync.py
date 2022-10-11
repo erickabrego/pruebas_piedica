@@ -12,7 +12,9 @@ class SaleOrderCRMSync(models.TransientModel):
 
     def search_crm_orders(self):
         endpoint = f"https://crmpiedica.com/api/searchorderpatient.php?id={self.partner_id.id}"
-        response = requests.get(endpoint)
+        token = self.env['ir.config_parameter'].sudo().get_param("crm.sync.token")
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.get(endpoint, headers=headers)
         response_json = response.json()
         print(response_json)
         for order in response_json:
@@ -26,8 +28,6 @@ class SaleOrderCRMSync(models.TransientModel):
                 order_line = self.env["sale.order.crm.sync.line"].sudo().create(data)
                 products = order.get("productos_pedidos")
                 if products:
-
-
                     # products = products.replace("id_odoo","'id_odoo'")
                     # products = products.replace("'id_odoo':","'id_odoo':''")
                     # products = products.replace("producto:","'producto':'")

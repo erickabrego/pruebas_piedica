@@ -86,3 +86,23 @@ class SaleOrder(models.Model):
             self.folio_pedido = sale_order.folio_pedido
             self.estatus_crm = sale_order.estatus_crm
         return notification
+
+    #Renvio de información
+    def resend_to_crm(self):
+        mrp_lines = self.order_line.filtered(
+                lambda line: 'Fabricar' in line.product_id.route_ids.mapped('name') and line.product_uom_qty == 1)
+        if mrp_lines:
+            crm_confirm_obj = self.env["crm.confirm.send"].create({'sale_order': self.id})
+            return crm_confirm_obj.send_to_crm()
+        else:
+            notification = {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': ("Error al reenviar el pedido"),
+                    'message': "No existen productos fabricables dentro de la orden.",
+                    'type': 'warning',
+                    'next': {'type': 'ir.actions.act_window_close'},
+                }
+            }
+            return notification

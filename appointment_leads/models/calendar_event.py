@@ -58,19 +58,19 @@ class CalendarEvent(models.Model):
     def get_opportunity_partner(self):
         for rec in self:
             if not rec.opportunity_id:
-                partner_id = rec.partner_ids.sudo().filtered(lambda partner: partner.x_studio_es_paciente)
                 stage_id = self.env["crm.stage"].sudo().search([("name", "=", "Agenda cita")], limit=1)
-                if partner_id:
-                    opportunity_ids = self.env["crm.lead"].sudo().search([("partner_id.id", "=", partner_id.id), (
-                    "stage_id.name", "in", ["Contactado", "Cancela cita"])])
-                    archived_opportunity = self.env["crm.lead"].sudo().search(
-                        [("partner_id.id", "=", partner_id.id), ("active", "=", False)])
-                    if opportunity_ids and stage_id:
-                        for opportunity_id in opportunity_ids:
-                            opportunity_id.stage_id = stage_id.id
-                            rec["opportunity_id"] = opportunity_id.id
-                    if archived_opportunity and stage_id:
-                        for archived_oppo in archived_opportunity:
-                            archived_oppo.stage_id = stage_id.id
-                            archived_oppo.active = True
-                            rec["opportunity_id"] = archived_opportunity.id
+                for partner_id in rec.partner_ids:
+                    if partner_id:
+                        opportunity_ids = self.env["crm.lead"].sudo().search([("partner_id.id", "=", partner_id.id), (
+                        "stage_id.name", "in", ["Contactado", "Cancela cita"])])
+                        archived_opportunity = self.env["crm.lead"].sudo().search(
+                            [("partner_id.id", "=", partner_id.id), ("active", "=", False)])
+                        if opportunity_ids and stage_id:
+                            for opportunity_id in opportunity_ids:
+                                opportunity_id.stage_id = stage_id.id
+                                rec["opportunity_id"] = opportunity_id.id
+                        if archived_opportunity and stage_id:
+                            for archived_oppo in archived_opportunity:
+                                archived_oppo.stage_id = stage_id.id
+                                archived_oppo.active = True
+                                rec["opportunity_id"] = archived_opportunity.id

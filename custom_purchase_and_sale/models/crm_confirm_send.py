@@ -9,7 +9,8 @@ class CRMConfirmSend(models.TransientModel):
     def send_to_crm(self):
         if not self.x_is_branch_order:
             self.sale_order.write({'p_ask_for_send_to_crm':False})
-            self.sale_order.action_confirm()
+            if self.sale_order.state in ["draft", "sent"]:
+                self.sale_order.action_confirm()
         rec = self.sale_order
         mrp_lines = rec.order_line.filtered(lambda line: 'Fabricar' in line.product_id.route_ids.mapped('name'))
         rule_id = rec.env["branch.factory"].sudo().search([("branch_id.id", "=", rec.company_id.id)], limit=1)

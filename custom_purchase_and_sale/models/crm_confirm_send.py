@@ -29,9 +29,17 @@ class CRMConfirmSend(models.TransientModel):
                         purchase_line = purchase_id.order_line.filtered(lambda p_line: p_line.product_id.id == line.product_id.id)
                         for purchase in purchase_line:
                             purchase["sale_line_id"] = line.id
-        if self.x_is_branch_order:
+        if self.x_is_branch_order and not self.sale_order.x_branch_order_id.x_from_error_order:
             res = super(CRMConfirmSend, self).send_to_crm()
             return res
+        elif self.x_is_branch_order and self.sale_order.x_branch_order_id.x_from_error_order:
+            self.sale_order.folio_pedido = self.sale_order.x_branch_order_id.folio_pedido
+            self.sale_order.estatus_crm = self.sale_order.x_branch_order_id.estatus_crm
+            for history in self.sale_order.x_branch_order_id.crm_status_history:
+                self.sale_order.crm_status_history = [(0,0,{'status':history.status.id,'date': history.date})]
+            self.sale_order.p_ask_for_send_to_crm = False
+            self.sale_order.action_confirm()
+            return False
 
     #Se modifica la función para poder seguir el flujo de crm dentro de odoo por medio de sucursal y fabrica
     def _validate_order_data(self, data):

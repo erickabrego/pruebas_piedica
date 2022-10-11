@@ -7,6 +7,8 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     x_branch_order_id = fields.Many2one(comodel_name="sale.order", string="Orden sucursal", copy=False)
+    x_status_error_crm = fields.Many2one(comodel_name="crm.status", string="Estado de error", copy=False)
+    x_from_error_order = fields.Boolean(string="Proveniente de orden con error", copy=False)
 
     def write(self, values):
         res = super(SaleOrder, self).write(values)
@@ -82,7 +84,7 @@ class SaleOrder(models.Model):
 
         confirme_send_obj = self.env["crm.confirm.send"].sudo().create({"sale_order": sale_order.id, "x_is_branch_order":True})
         notification = confirme_send_obj.sudo().send_to_crm()
-        if notification['params']['type'] == 'success':
+        if notification and notification['params']['type'] == 'success' and not self.x_from_error_order:
             self.folio_pedido = sale_order.folio_pedido
             self.estatus_crm = sale_order.estatus_crm
         return notification
@@ -106,3 +108,26 @@ class SaleOrder(models.Model):
                 }
             }
             return notification
+
+
+    def copy_error_order(self):
+        sale_order_id = self.copy()
+        sale_order_id.folio_pedido = self.folio_pedido
+        sale_order_id.estatus_crm = self.estatus_crm
+        sale_order_id.x_from_error_order = True
+        sale_order_id.crm_status_history = [(0,0,{'status': self.x_status_error_crm.id, 'date': datetime.datetime.now()})]
+        view = self.env.ref('sale.view_order_form')
+        print(sale_order_id)
+        return {
+            'name': 'Venta por error',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'sale.order',
+            'views': [(view.id, 'form')],
+            'view_id': view.id,
+            'target': 'current',
+            'res_id': sale_order_id.id
+        }
+
+
+

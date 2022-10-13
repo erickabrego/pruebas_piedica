@@ -57,9 +57,8 @@ class CalendarEvent(models.Model):
 
     def get_opportunity_partner(self):
         for rec in self:
-            if not rec.opportunity_id:
-                partner_id = rec.partner_ids.sudo().filtered(lambda partner: partner.x_studio_es_paciente)
-                stage_id = self.env["crm.stage"].sudo().search([("name", "=", "Agenda cita")], limit=1)
+            stage_id = self.env["crm.stage"].sudo().search([("name", "=", "Agenda cita")], limit=1)
+            for partner_id in rec.partner_ids:
                 if partner_id:
                     opportunity_ids = self.env["crm.lead"].sudo().search([("partner_id.id", "=", partner_id.id), (
                     "stage_id.name", "in", ["Contactado", "Cancela cita"])])

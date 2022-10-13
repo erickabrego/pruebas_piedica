@@ -36,7 +36,9 @@ class ResPartnerCRMSync(models.TransientModel):
             endpoint = f"https://crmpiedica.com/api/searchpatient.php?name={self.name}&birthdate={birthdate}&email={email}"
         else:
             endpoint = f"https://crmpiedica.com/api/searchpatient.php?name={self.name}"
-        response = requests.get(endpoint)
+        token = self.env['ir.config_parameter'].sudo().get_param("crm.sync.token")
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.get(endpoint, headers=headers)
         response_json = response.json()
         _logger.info(response_json)
         if response.ok and response_json != "NO existe registro ...":

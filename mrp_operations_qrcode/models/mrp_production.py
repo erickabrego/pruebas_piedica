@@ -111,7 +111,9 @@ class MrpProduction(models.Model):
                     'message': ('Operacion <b>%s</b> terminada' % workorder.name)
                 }
 
-        
+
+        # Se marcan como hechas las cantidades de la línea en la orden de envío
+        # relacionada con la orden de fabricación
         if (self.state == 'done') and (not self.p_to_send):
             delivery_order = self.procurement_group_id.mrp_production_ids.move_dest_ids.group_id.sale_id.picking_ids
 
@@ -119,9 +121,9 @@ class MrpProduction(models.Model):
                 self.write({'p_to_send': True})
                 sale_line = self.procurement_group_id.mrp_production_ids.move_dest_ids.sale_line_id
                 mrp_done_ids = self.env["mrp.production"].search([("origin","=",sale_line.order_id.name)])
-                delivery_order.add_qty_done_by_sale_line(sale_line.id, self.qty_producing)    
-                
-                # if len(mrp_done_ids) == len(mrp_done_ids.filtered(lambda order_mrp: order_mrp.state == 'done' and order_mrp.p_to_send)):                    
+                delivery_order.add_qty_done_by_sale_line(sale_line.id, self.qty_producing)
+
+                # if len(mrp_done_ids) == len(mrp_done_ids.filtered(lambda order_mrp: order_mrp.state == 'done' and order_mrp.p_to_send)):
                 #     #Hacemos uso de la API externa para mandar la información del pedido y su etapa para marcar como enviado
                 #     url = f"https://crmpiedica.com/api/api.php?id_pedido={sale_line.order_id.folio_pedido}&id_etapa=6"
                 #     response = requests.put(url)

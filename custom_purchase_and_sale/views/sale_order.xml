@@ -17,13 +17,13 @@
                </xpath>
                <xpath expr="//field[@name='mid_layer_id']" position="after">
                    <field name="x_is_custom" invisible="1"/>
-                   <field name="x_shapelist_domian_ids" attrs="{'readonly': [('x_is_custom','=',True)]}"/>
+                   <field name="x_shapelist_domian_ids" attrs="{'readonly': [('x_is_custom','=',False)]}"/>
                </xpath>
                <xpath expr="//field[@name='main_layer_id']" position="attributes">
-                   <attribute name="attrs">{'readonly': [('x_is_custom','=',True)]}</attribute>
+                   <attribute name="attrs">{'readonly': [('x_is_custom','=',False)]}</attribute>
                </xpath>
                <xpath expr="//field[@name='mid_layer_id']" position="attributes">
-                   <attribute name="attrs">{'readonly': [('x_is_custom','=',True)]}</attribute>
+                   <attribute name="attrs">{'readonly': [('x_is_custom','=',False)]}</attribute>
                </xpath>
            </field>
        </record>

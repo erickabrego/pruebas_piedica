@@ -23,16 +23,19 @@ class StockPicking(models.Model):
     def add_qty_done_by_sale_line(self, sale_order_line_id, qty_done):
         self.ensure_one()
 
-        found = False
-
         for move in self.move_ids_without_package:
             if move.sale_line_id.id == sale_order_line_id:
                 move.write({'quantity_done': qty_done})
-                found = True
+
+                url = f"https://crmpiedica.com/api/api.php?id_pedido={self.sale_id.folio_pedido}&id_etapa=1"
+                token = self.env['ir.config_parameter'].sudo().get_param("crm.sync.token")
+                headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'}
+                response = requests.put(url, headers=headers)
+                self.sale_id.message_post(body=response.content)
+                crm_status = self.env["crm.status"].search([("code", "=", "24")], limit=1)
+
+                if crm_status:
+                    self.sale_id.write({'estatus_crm': crm_status.id})
+                    self.sale_id.create_estatus_crm()
+
                 break
-
-        if found:
-            sucursal_category = self.env['res.partner.category'].search([('name', '=', 'Sucursal')])
-
-            if (sucursal_category) and (sucursal_category[0] not in self.partner_id.category_id):
-                res = self.button_validate()
